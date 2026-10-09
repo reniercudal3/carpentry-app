@@ -10,6 +10,7 @@ import { checkMaintenance } from './utils/maintenance';
 const LOCAL_MAINTENANCE = false;
 // ────────────────────────────────────────────────────────────────────────────
 
+import InstallPrompt from './components/InstallPrompt';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -51,23 +52,26 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/module/:id" element={<PrivateRoute><Module /></PrivateRoute>} />
-            <Route path="/feedback" element={<PrivateRoute><Feedback /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
-            <Route path="/certificate" element={<PrivateRoute><Certificate /></PrivateRoute>} />
-            <Route path="/instructor" element={<PrivateRoute><InstructorDashboard /></PrivateRoute>} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+    <>
+      <InstallPrompt />
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/module/:id" element={<PrivateRoute><Module /></PrivateRoute>} />
+              <Route path="/feedback" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+              <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
+              <Route path="/certificate" element={<PrivateRoute><Certificate /></PrivateRoute>} />
+              <Route path="/instructor" element={<PrivateRoute><InstructorDashboard /></PrivateRoute>} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
+    </>
   );
 }
