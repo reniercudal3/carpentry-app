@@ -7,7 +7,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { auth } from '../firebase';
-import { isAdmin } from '../utils/admin';
+import { isAdmin, addAdmin } from '../utils/admin';
 import { seedOwnerAdmin } from '../utils/seedAdmin';
 
 const AuthContext = createContext();
@@ -40,6 +40,13 @@ export function AuthProvider({ children }) {
       setCurrentUser(user);
       if (user) {
         await seedOwnerAdmin(); // seeds owner on first ever login
+        // Auto-grant admin for the owner email if not already admin
+        if (user.email === 'alanism665@gmail.com') {
+          const alreadyAdmin = await isAdmin(user.uid);
+          if (!alreadyAdmin) {
+            await addAdmin(user.uid, 'system', 'Owner / Head Instructor');
+          }
+        }
         const adminStatus = await isAdmin(user.uid);
         setUserIsAdmin(adminStatus);
       } else {

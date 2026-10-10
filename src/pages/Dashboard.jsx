@@ -170,8 +170,12 @@ export default function Dashboard() {
         <button style={styles.feedbackBtn} onClick={() => navigate('/feedback')}>💬 Send Feedback</button>
         <button style={{ ...styles.feedbackBtn, background: '#1d4ed8' }} onClick={() => navigate('/leaderboard')}>🏆 Leaderboard</button>
         {userIsAdmin && (
-          <button style={{ ...styles.feedbackBtn, background: '#166534' }} onClick={() => navigate('/instructor')}>
-            🎓 Instructor Panel
+          <button
+            style={{...styles.feedbackBtn, background: '#8B4513', border: '2px solid #d4a574', fontWeight: '700'}}
+            onClick={() => navigate('/instructor')}
+            aria-label="Admin Dashboard"
+          >
+            🎓 Admin Dashboard
           </button>
         )}
       </div>

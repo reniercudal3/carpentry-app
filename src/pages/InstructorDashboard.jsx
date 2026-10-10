@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -6,6 +6,8 @@ import { getAllProgress, getAllFeedback } from '../utils/progress';
 import { getAllAdmins, addAdmin, removeAdmin } from '../utils/admin';
 import { getUserProfiles } from '../utils/users';
 import { modules } from '../data/modules';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function InstructorDashboard() {
   const { currentUser, userIsAdmin } = useAuth();
@@ -20,6 +22,7 @@ export default function InstructorDashboard() {
   const [newAdminUid, setNewAdminUid] = useState('');
   const [newAdminLabel, setNewAdminLabel] = useState('');
   const [adminMsg, setAdminMsg] = useState('');
+  const [allUsers, setAllUsers] = useState([]);
 
   const bg = dark ? '#1a1a1a' : '#f5f0eb';
   const cardBg = dark ? '#2a2a2a' : '#fff';
@@ -38,6 +41,22 @@ export default function InstructorDashboard() {
       setProfiles(profileMap);
       setLoading(false);
     });
+  }, [userIsAdmin]);
+
+  useEffect(() => {
+    if (!userIsAdmin) return;
+    const ref = collection(db, 'users');
+    const unsub = onSnapshot(ref, (snap) => {
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      // Sort by createdAt descending (newest first)
+      list.sort((a, b) => {
+        if (!a.createdAt) return 1;
+        if (!b.createdAt) return -1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setAllUsers(list);
+    });
+    return () => unsub();
   }, [userIsAdmin]);
 
   if (!userIsAdmin) {
@@ -135,44 +154,74 @@ export default function InstructorDashboard() {
           <>
             {/* Students */}
             {tab === 'students' && (
-              <div style={{ ...styles.card, background: cardBg }}>
-                {students.length === 0 ? <p style={{ color: sub }}>No activity yet.</p>
-                  : students.map((s, i) => (
-                    <div key={s.userId} style={styles.studentRow}>
-                      <div style={{ ...styles.studentRank, color: '#8B4513' }}>#{i + 1}</div>
-                      <div style={styles.studentInfo}>
-                        <div style={{ color: text, fontWeight: '600' }}>
-                          {s.userId === currentUser.uid
-                            ? `${profiles[s.userId]?.displayName ?? 'You'} (Instructor)`
-                            : profiles[s.userId]?.displayName ?? `Student ${i + 1}`}
-                        </div>
-                        <div style={{ color: sub, fontSize: '12px' }}>
-                          {s.modulesCompleted}/{modules.length} modules • {s.score}/{s.total} correct
-                        </div>
-                        {profiles[s.userId]?.email && (
-                          <div style={{ color: sub, fontSize: '11px', marginTop: '2px' }}>
-                            {profiles[s.userId].email}
-                            {profiles[s.userId].createdAt
-                              ? ` • Joined ${new Date(profiles[s.userId].createdAt).toLocaleDateString()}`
-                              : ''}
+              <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                {/* Total count */}
+                <div style={{...styles.card, background: cardBg, padding: '12px 18px'}}>
+                  <div style={{color: text, fontWeight: '700', fontSize: '15px'}}>
+                    👥 {allUsers.length} Registered User{allUsers.length !== 1 ? 's' : ''}
+                  </div>
+                  <div style={{color: sub, fontSize: '12px', marginTop: '4px'}}>
+                    Real-time · updates automatically as students register
+                  </div>
+                </div>
+
+                {allUsers.length === 0 ? (
+                  <div style={{...styles.card, background: cardBg, color: sub}}>No users registered yet.</div>
+                ) : (
+                  <div style={{...styles.card, background: cardBg}}>
+                    {allUsers.map((u, i) => {
+                      const userProgress = byUser[u.id];
+                      const percent = userProgress
+                        ? Math.round((userProgress.entries.reduce((a, b) => a + b.score, 0) /
+                            Math.max(userProgress.entries.reduce((a, b) => a + b.total, 0), 1)) * 100)
+                        : null;
+                      const isCurrentUser = u.id === currentUser.uid;
+                      return (
+                        <div key={u.id} style={{...styles.studentRow,
+                          borderBottom: i < allUsers.length - 1 ? '1px solid #f0f0f0' : 'none'}}>
+                          <div style={{width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+                            background: 'linear-gradient(135deg, #8B4513, #d2691e)',
+                            color: '#fff', fontSize: '16px', fontWeight: '700',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',}}>
+                            {(u.displayName || u.email || 'U')[0].toUpperCase()}
                           </div>
-                        )}
-                        <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
-                          {s.entries.map((e) => {
-                            const mod = modules.find((m) => m.id === e.moduleId);
-                            return (
-                              <span key={e.moduleId} style={{ ...styles.modTag, background: mod?.color }}>
-                                {mod?.icon} {e.percent}%
-                              </span>
-                            );
-                          })}
+                          <div style={styles.studentInfo}>
+                            <div style={{color: text, fontWeight: '600', fontSize: '14px'}}>
+                              {u.displayName || 'Legacy Account'}
+                              {isCurrentUser && <span style={{color: '#22c55e', fontSize: '11px', marginLeft: '6px'}}>● You (Admin)</span>}
+                            </div>
+                            {u.email && (
+                              <div style={{color: sub, fontSize: '12px', marginTop: '2px'}}>{u.email}</div>
+                            )}
+                            <div style={{color: sub, fontSize: '11px', marginTop: '2px'}}>
+                              {u.createdAt
+                                ? `Joined ${new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
+                                : 'Join date unknown'}
+                            </div>
+                            {userProgress && (
+                              <div style={{display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap'}}>
+                                {userProgress.entries.map((e) => {
+                                  const mod = modules.find((m) => m.id === e.moduleId);
+                                  return (
+                                    <span key={e.moduleId} style={{...styles.modTag, background: mod?.color ?? '#8B4513'}}>
+                                      {mod?.icon} {e.percent}%
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          {percent !== null && (
+                            <div style={{...styles.scoreBadge,
+                              background: percent >= 80 ? '#22c55e' : percent >= 50 ? '#f59e0b' : '#ef4444'}}>
+                              {percent}%
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div style={{ ...styles.scoreBadge, background: s.percent >= 80 ? '#22c55e' : s.percent >= 50 ? '#f59e0b' : '#ef4444' }}>
-                        {s.percent}%
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
