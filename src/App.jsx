@@ -22,6 +22,7 @@ import Profile from './pages/Profile';
 import Leaderboard from './pages/Leaderboard';
 import Certificate from './pages/Certificate';
 import InstructorDashboard from './pages/InstructorDashboard';
+import SetupAdmin from './pages/SetupAdmin';
 
 export default function App() {
   const [maintenance, setMaintenance] = useState(LOCAL_MAINTENANCE);
@@ -68,6 +69,7 @@ export default function App() {
               <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
               <Route path="/certificate" element={<PrivateRoute><Certificate /></PrivateRoute>} />
               <Route path="/instructor" element={<AdminRoute><InstructorDashboard /></AdminRoute>} />
+              <Route path="/setup-admin" element={<PrivateRoute><SetupAdmin /></PrivateRoute>} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </BrowserRouter>
