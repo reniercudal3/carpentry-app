@@ -1,16 +1,14 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "headers": [
+  "redirects": [
     {
-      "source": "/Compass.apk",
-      "headers": [
-        { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
-        { "key": "Content-Disposition", "value": "attachment; filename=Compass.apk" }
-      ]
+      "source": "/download",
+      "destination": "https://drive.google.com/uc?export=download&id=1bBHN-XBpETRRlBZUSTHGOOwPiqN0XXuS",
+      "permanent": false
     }
   ],
   "rewrites": [
-    { "source": "/((?!Compass\\.apk$).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
