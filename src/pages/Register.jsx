@@ -22,15 +22,23 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password, username);
-      await saveUserProfile(auth.currentUser.uid, username, email);
-      navigate('/dashboard');
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('An account with this email already exists.');
       } else {
         setError('Failed to create account. Please try again.');
       }
+      setLoading(false);
+      return;
     }
+    // Profile write is non-fatal — Auth account + displayName already set via updateProfile.
+    // A Firestore failure here must not block the user from reaching the dashboard.
+    try {
+      await saveUserProfile(auth.currentUser.uid, username, email);
+    } catch {
+      // Silently swallow — the profile can be written on next login if needed.
+    }
+    navigate('/dashboard');
     setLoading(false);
   }
 
