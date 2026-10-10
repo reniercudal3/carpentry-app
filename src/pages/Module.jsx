@@ -63,11 +63,10 @@ export default function Module() {
             onSubmit={(answers) => {
               const score = mod.preTest.filter((q) => answers[q.id] === q.correct).length;
               setPreScore(score);
-              setPreSubmitted(true);
               setShowPreResult(true);
             }}
             onNext={() => { setShowPreResult(false); setStage('objectives'); }}
-            onRetry={() => { setPreSubmitted(false); setShowPreResult(false); }}
+            onRetry={() => { setShowPreResult(false); }}
             showResult={showPreResult}
             isPreTest={true}
             postScore={preScore}
@@ -93,7 +92,6 @@ export default function Module() {
             onSubmit={async (answers) => {
               const score = mod.postTest.filter((q) => answers[q.id] === q.correct).length;
               setPostScore(score);
-              setPostSubmitted(true);
               setShowResult(true);
               try {
                 await saveProgress(currentUser?.uid, mod.id, score, mod.postTest.length);
@@ -103,7 +101,6 @@ export default function Module() {
             }}
             onNext={() => navigate('/dashboard')}
             onRetry={() => {
-              setPostSubmitted(false);
               setShowResult(false);
               setStage('lessons');
               setActiveLesson(0);
