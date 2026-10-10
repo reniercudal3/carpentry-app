@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAllProgress } from '../utils/progress';
+import { getUserProfiles } from '../utils/users';
 import { modules } from '../data/modules';
 
 export default function Leaderboard() {
@@ -10,6 +11,7 @@ export default function Leaderboard() {
   const { dark } = useTheme();
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
+  const [profiles, setProfiles] = useState({});
   const [loading, setLoading] = useState(true);
 
   const bg = dark ? '#1a1a1a' : '#f5f0eb';
@@ -18,7 +20,7 @@ export default function Leaderboard() {
   const sub = dark ? '#aaa' : '#666';
 
   useEffect(() => {
-    getAllProgress().then((data) => {
+    getAllProgress().then(async (data) => {
       // Group by userId
       const byUser = {};
       data.forEach((entry) => {
@@ -30,6 +32,10 @@ export default function Leaderboard() {
       const sorted = Object.values(byUser)
         .map((u) => ({ ...u, percent: u.totalQ > 0 ? Math.round((u.totalScore / u.totalQ) * 100) : 0 }))
         .sort((a, b) => b.percent - a.percent || b.modules - a.modules);
+      // Load real profiles
+      const uids = sorted.map((r) => r.userId);
+      const profileMap = await getUserProfiles(uids);
+      setProfiles(profileMap);
       setRows(sorted);
       setLoading(false);
     });
@@ -59,7 +65,9 @@ export default function Leaderboard() {
               </div>
               <div style={styles.rowInfo}>
                 <div style={{ color: text, fontWeight: row.userId === currentUser?.uid ? '700' : '500', fontSize: '15px' }}>
-                  {row.userId === currentUser?.uid ? `${currentUser?.displayName} (You)` : `Student ${i + 1}`}
+                  {row.userId === currentUser?.uid
+                    ? `${profiles[row.userId]?.displayName ?? currentUser?.displayName} (You)`
+                    : profiles[row.userId]?.displayName ?? `Student ${i + 1}`}
                 </div>
                 <div style={{ color: sub, fontSize: '12px' }}>{row.modules}/{modules.length} modules • {row.totalScore} correct answers</div>
               </div>

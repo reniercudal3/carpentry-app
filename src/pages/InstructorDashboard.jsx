@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { getAllProgress, getAllFeedback } from '../utils/progress';
 import { getAllAdmins, addAdmin, removeAdmin } from '../utils/admin';
+import { getUserProfiles } from '../utils/users';
 import { modules } from '../data/modules';
 
 export default function InstructorDashboard() {
@@ -13,6 +14,7 @@ export default function InstructorDashboard() {
   const [progress, setProgress] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [profiles, setProfiles] = useState({});
   const [tab, setTab] = useState('students');
   const [loading, setLoading] = useState(true);
   const [newAdminUid, setNewAdminUid] = useState('');
@@ -26,10 +28,14 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     if (!userIsAdmin) return;
-    Promise.all([getAllProgress(), getAllFeedback(), getAllAdmins()]).then(([p, f, a]) => {
+    Promise.all([getAllProgress(), getAllFeedback(), getAllAdmins()]).then(async ([p, f, a]) => {
       setProgress(p);
       setFeedback(f.sort((a, b) => new Date(b.date) - new Date(a.date)));
       setAdmins(a);
+      // Load real user profiles
+      const uids = [...new Set(p.map((e) => e.userId))];
+      const profileMap = await getUserProfiles(uids);
+      setProfiles(profileMap);
       setLoading(false);
     });
   }, [userIsAdmin]);
@@ -136,11 +142,21 @@ export default function InstructorDashboard() {
                       <div style={{ ...styles.studentRank, color: '#8B4513' }}>#{i + 1}</div>
                       <div style={styles.studentInfo}>
                         <div style={{ color: text, fontWeight: '600' }}>
-                          {s.userId === currentUser.uid ? 'You (Instructor)' : `Student ${i + 1}`}
+                          {s.userId === currentUser.uid
+                            ? `${profiles[s.userId]?.displayName ?? 'You'} (Instructor)`
+                            : profiles[s.userId]?.displayName ?? `Student ${i + 1}`}
                         </div>
                         <div style={{ color: sub, fontSize: '12px' }}>
                           {s.modulesCompleted}/{modules.length} modules • {s.score}/{s.total} correct
                         </div>
+                        {profiles[s.userId]?.email && (
+                          <div style={{ color: sub, fontSize: '11px', marginTop: '2px' }}>
+                            {profiles[s.userId].email}
+                            {profiles[s.userId].createdAt
+                              ? ` • Joined ${new Date(profiles[s.userId].createdAt).toLocaleDateString()}`
+                              : ''}
+                          </div>
+                        )}
                         <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
                           {s.entries.map((e) => {
                             const mod = modules.find((m) => m.id === e.moduleId);

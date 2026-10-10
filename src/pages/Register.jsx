@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { saveUserProfile } from '../utils/users';
+import { auth } from '../firebase';
 
 export default function Register() {
   const { register } = useAuth();
@@ -20,6 +22,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password, username);
+      await saveUserProfile(auth.currentUser.uid, username, email);
       navigate('/dashboard');
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {

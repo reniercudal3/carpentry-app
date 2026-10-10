@@ -12,6 +12,7 @@ const LOCAL_MAINTENANCE = false;
 
 import InstallPrompt from './components/InstallPrompt';
 import PrivateRoute from './components/PrivateRoute';
+import AdminRoute from './components/AdminRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -66,7 +67,7 @@ export default function App() {
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
               <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
               <Route path="/certificate" element={<PrivateRoute><Certificate /></PrivateRoute>} />
-              <Route path="/instructor" element={<PrivateRoute><InstructorDashboard /></PrivateRoute>} />
+              <Route path="/instructor" element={<AdminRoute><InstructorDashboard /></AdminRoute>} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </BrowserRouter>
