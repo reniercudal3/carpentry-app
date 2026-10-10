@@ -10,22 +10,7 @@
       ]
     }
   ],
-  "routes": [
-    {
-      "src": "/Compass.apk",
-      "dest": "/Compass.apk"
-    },
-    {
-      "src": "^/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "^/(.*\\.(js|css|png|svg|ico|json|txt|webmanifest|woff|woff2))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/((?!Compass\\.apk$).*)", "destination": "/index.html" }
   ]
 }
