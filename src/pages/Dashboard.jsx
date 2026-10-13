@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { modules } from '../data/modules';
 import { getUserProgress } from '../utils/progress';
+import WelcomeNotice from '../components/WelcomeNotice';
 
 const PASSING_SCORE = 80; // percent required to unlock next module
 
@@ -54,6 +55,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ ...styles.container, background: bg }}>
+      <WelcomeNotice />
       {/* Header */}
       <div style={styles.header}>
         <div>
