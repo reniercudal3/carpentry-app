@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const STORAGE_KEY = 'compass_welcome_seen';
+const STORAGE_KEY = 'compass_welcome_seen_v2';
 
 export default function WelcomeNotice() {
   const [visible, setVisible] = useState(() => {
