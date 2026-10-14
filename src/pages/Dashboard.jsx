@@ -27,10 +27,7 @@ export default function Dashboard() {
   }, [currentUser]);
 
   function isUnlocked(index) {
-    if (index === 0) return true;
-    const prev = modules[index - 1];
-    const p = progress[prev.id];
-    return !!(p && p.percent >= PASSING_SCORE);
+    return true; // all modules unlocked temporarily
   }
 
   function getBadge(p) {
