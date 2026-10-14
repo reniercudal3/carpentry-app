@@ -1,14 +1,9 @@
 import { useState } from 'react';
 
-const STORAGE_KEY = 'compass_welcome_seen_v2';
-
 export default function WelcomeNotice() {
-  const [visible, setVisible] = useState(() => {
-    return !localStorage.getItem(STORAGE_KEY);
-  });
+  const [visible, setVisible] = useState(true);
 
   function handleClose() {
-    localStorage.setItem(STORAGE_KEY, '1');
     setVisible(false);
   }
 
